@@ -7,12 +7,10 @@
 
 //payload of the msg
 typedef nx_struct my_msg {
-	//REQ/RESP
-	//type;
-	//counter
-	//counter;
-	//temp
-	//value;
+	nx_uint8_t msg_type;
+	nx_uint16_t counter;
+	nx_uint16_t value;
+	
 } my_msg_t;
 
 #define REQ 1

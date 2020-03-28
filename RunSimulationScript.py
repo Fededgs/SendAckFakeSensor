@@ -58,6 +58,9 @@ t.addChannel("radio_pack",out);
 print "Activate debug message on channel role"
 t.addChannel("role",out);
 
+print "Activate debug message on channel timer"
+t.addChannel("fake_sensor",out);
+
 
 #Create nodes
 

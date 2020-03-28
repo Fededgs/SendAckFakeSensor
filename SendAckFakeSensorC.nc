@@ -16,15 +16,18 @@ module SendAckFakeSensorC {
 	interface Boot; 
 	
 	interface SplitControl;
-	interface Packet;
-	
 	interface AMSend;
     interface Receive;
-    	
+    
     interface Timer<TMilli> as TimerMote1;
-	interface Timer<TMilli> as TimerMote2;
 	
-	interface Read<uint16_t>;
+	//Packet
+	interface Packet;
+	interface PacketAcknowledgements;
+	
+	
+	interface Read<uint16_t> as SensorRead;//read fake sensor
+	
   }
 
 } implementation {
@@ -52,10 +55,6 @@ module SendAckFakeSensorC {
   		//temp
   		call TimerMote1.startPeriodic(1000);
   		}
-
-        if(TOS_NODE_ID==2){
-        call TimerMote2.startPeriodic(1000);
-        }  
  	}
     else{
 	//TODO:dbg for error
@@ -80,21 +79,14 @@ module SendAckFakeSensorC {
 	 */
 	 
    	dbg("timer","Mote1 Timer fired at %s.\n", sim_time_string());
-   	//call sendReq();
+   	sendReq();
    	
   }
+  
 
-  event void TimerMote2.fired() {
-	/* This event is triggered every time the timer fires.
-	 * When the timer fires, we send a request
-	 * Fill this part...
-	 */
-	dbg("timer","Mote2 Timer fired at %s.\n", sim_time_string());
-  }
-  
-  
   //***************** Send request function ********************//
   void sendReq() {
+  	
 	/* This function is called when we want to send a request
 	 *
 	 * STEPS:
@@ -104,19 +96,37 @@ module SendAckFakeSensorC {
 	 * 3. Send an UNICAST message to the correct node
 	 * X. Use debug statements showing what's happening (i.e. message fields)
 	 */
+	 
+ 	my_msg_t* msgg=(my_msg_t*)(call Packet.getPayload(&packet,sizeof(my_msg_t)));
+ 	
+ 	if(msgg==NULL){
+ 	//dbg error pack
+ 	return;}
+ 	
+ 	msgg->msg_type = REQ;
+ 	msgg->counter = counter;
+ 	
+ 	call PacketAcknowledgements.requestAck( &packet ); //checks
+ 	
+ 	
+ 	if(call AMSend.send(2,&packet,sizeof(my_msg_t)) == SUCCESS){
+ 	
+	  dbg("radio_send", "Packet sent successfully!\n");
+	  dbg("radio_pack",">>>Pack\n \t Payload length %hhu \n", call Packet.payloadLength( &packet ) );
+	  //dbg_clear("radio_pack","\t Source: %hhu \n ", call AMPacket.source( &packet ) );
+	  //dbg_clear("radio_pack","\t Destination: %hhu \n ", call AMPacket.destination( &packet ) );
+	  //dbg_clear("radio_pack","\t AM Type???????: %hhu \n ", call AMPacket.type( &packet ) );
+	  dbg_clear("radio_pack","\t\t Payload \n" );
+	  dbg_clear("radio_pack", "\t\t msg_type: %hhu \n ", msgg->msg_type);
+  	  dbg_clear("radio_pack", "\t\t counter: %hhu \n ", msgg->counter);
+	  dbg_clear("radio_pack", "\t\t value: %hhu \n ", msgg->value);
+	  dbg_clear("radio_send", "\n ");
+	  dbg_clear("radio_pack", "\n");
+      
+      }
+      //increment counter
+      counter++;	
  }        
-
-  //****************** Task send response *****************//
-  void sendResp() {
-  	/* This function is called when we receive the REQ message.
-  	 * Nothing to do here. 
-  	 * `call Read.read()` reads from the fake sensor.
-  	 * When the reading is done it raise the event read one.
-  	 */
-	call Read.read();
-  }
-
- 
 
   //********************* AMSend interface ****************//
   event void AMSend.sendDone(message_t* buf,error_t err) {
@@ -129,6 +139,31 @@ module SendAckFakeSensorC {
 	 * 2b. Otherwise, send again the request
 	 * X. Use debug statements showing what's happening (i.e. message fields)
 	 */
+	 
+	if(&packet == buf && err == SUCCESS ) {
+		dbg("radio_send", "Packet sent...\n");
+    
+	
+		if ( call PacketAcknowledgements.wasAcked( buf ) ) {
+			dbg_clear("radio_ack", "\t\tand ack received at time %s \n", sim_time_string());
+
+			if(TOS_NODE_ID==1){			
+				call TimerMote1.stop();
+				dbg("timer","Timer stopped at time %s \n", sim_time_string());
+			}
+
+			
+			}
+		  
+		else{
+			dbg_clear("radio_ack", "\t\tand NO ack received at time %s \n", sim_time_string());
+		}  
+		
+//		dbg_clear("radio_send", " at time %s \n", sim_time_string());
+    }
+	 
+	 
+	 
   }
 
   //***************************** Receive interface *****************//
@@ -141,11 +176,28 @@ module SendAckFakeSensorC {
 	 * 3. If a request is received, send the response
 	 * X. Use debug statements showing what's happening (i.e. message fields)
 	 */
+	 
+	 my_msg_t* msgg=(my_msg_t*)payload;
+
+	 switch(msgg->msg_type)
+	 {
+	 	case (REQ):
+			dbg("role", "REQ message arrived\n");
+		 sendResp();
+	 	break;	 	
+	 	
+	 	case (RESP):
+	 		dbg("role", "RESP message arrived\n");
+	 	break;
+	 	
+	 	default:
+	 	break;
+	 }
 
   }
-  
+
   //************************* Read interface **********************//
-  event void Read.readDone(error_t result, uint16_t data) {
+  event void SensorRead.readDone(error_t result, uint16_t data) {
 	/* This event is triggered when the fake sensor finish to read (after a Read.read()) 
 	 *
 	 * STEPS:
@@ -154,5 +206,78 @@ module SendAckFakeSensorC {
 	 * X. Use debug statement showing what's happening (i.e. message fields)
 	 */
 
+ 	my_msg_t* msgg=(my_msg_t*)(call Packet.getPayload(&packet,sizeof(my_msg_t)));
+ 	
+	double value_sens = ((double)data/65535)*100;
+	dbg("fake_sensor","read done %f\n",value_sens);
+	
+ 	if(msgg==NULL){
+ 	//dbg error pack
+ 	return;}
+ 	
+ 	msgg->msg_type = RESP;
+ 	msgg->counter = counter;
+ 	msgg->value = value_sens;
+ 	
+ 	call PacketAcknowledgements.requestAck( &packet ); //checks
+ 	
+ 	
+ 	if(call AMSend.send(1,&packet,sizeof(my_msg_t)) == SUCCESS){
+ 	
+	  dbg("radio_send", "Packet sent successfully!\n");
+	  dbg("radio_pack",">>>Pack\n \t Payload length %hhu \n", call Packet.payloadLength( &packet ) );
+	  //dbg_clear("radio_pack","\t Source: %hhu \n ", call AMPacket.source( &packet ) );
+	  //dbg_clear("radio_pack","\t Destination: %hhu \n ", call AMPacket.destination( &packet ) );
+	  //dbg_clear("radio_pack","\t AM Type???????: %hhu \n ", call AMPacket.type( &packet ) );
+	  dbg_clear("radio_pack","\t\t Payload \n" );
+	  dbg_clear("radio_pack", "\t\t msg_type: %hhu \n ", msgg->msg_type);
+  	  dbg_clear("radio_pack", "\t\t counter: %hhu \n ", msgg->counter);
+	  dbg_clear("radio_pack", "\t\t value: %hhu \n ", msgg->value);
+	  dbg_clear("radio_send", "\n ");
+	  dbg_clear("radio_pack", "\n");
+     
+      }
+	
 }
+
+  
+  
+  //****************** Task send response *****************//
+  void sendResp() {
+  	/* This function is called when we receive the REQ message.
+  	 * Nothing to do here. 
+  	 * `call Read.read()` reads from the fake sensor.
+  	 * When the reading is done it raise the event read one.
+  	 */
+	call SensorRead.read();
+  }
+
+ 
+
+  
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

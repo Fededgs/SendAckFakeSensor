@@ -8,18 +8,19 @@
 //payload of the msg
 typedef nx_struct my_msg {
 	//REQ/RESP
-	type;
+	//type;
 	//counter
-	counter;
+	//counter;
 	//temp
-	value;
+	//value;
 } my_msg_t;
 
 #define REQ 1
 #define RESP 2 
 
 enum{
-AM_MY_MSG = 6,
+AM_SEND_MSG = 6,
 };
 
 #endif
+

@@ -38,8 +38,15 @@ print "Activate debug message on channel init"
 t.addChannel("init",out);
 print "Activate debug message on channel boot"
 t.addChannel("boot",out);
+
+print "Activate debug message on channel timer"
+t.addChannel("timer",out);
+
 print "Activate debug message on channel radio"
 t.addChannel("radio",out);
+print "Activate debug message on channel radio_err"
+t.addChannel("radio_err",out);
+
 print "Activate debug message on channel radio_send"
 t.addChannel("radio_send",out);
 print "Activate debug message on channel radio_ack"
@@ -52,15 +59,19 @@ print "Activate debug message on channel role"
 t.addChannel("role",out);
 
 
+#Create nodes
+
+#Create node 1
 print "Creating node 1...";
 node1 =t.getNode(1);
-time1 = 0*t.ticksPerSecond(); #instant at which each node should be turned on
+time1 = 0*t.ticksPerSecond(); 
 node1.bootAtTime(time1);
 print ">>>Will boot at time",  time1/t.ticksPerSecond(), "[sec]";
 
+#Create node 2
 print "Creating node 2...";
 node2 = t.getNode(2);
-time2 = 1*t.ticksPerSecond();
+time2 = 5*t.ticksPerSecond(); #dopo 5 secondi
 node2.bootAtTime(time2);
 print ">>>Will boot at time", time2/t.ticksPerSecond(), "[sec]";
 
@@ -98,7 +109,7 @@ for line in lines:
             t.getNode(i).addNoiseTraceReading(val)
 print "Done!";
 
-for i in range(1, 3):
+for i in range(1, 3): 
     print ">>>Creating noise model for node:",i;
     t.getNode(i).createNoiseModel()
 

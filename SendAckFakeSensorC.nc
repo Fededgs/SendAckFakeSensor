@@ -9,17 +9,21 @@
 #include "SendAckFakeSensor.h"
 #include "Timer.h"
 
-module sendAckC {
+module SendAckFakeSensorC {
 
   uses {
   /****** INTERFACES *****/
 	interface Boot; 
 	
-    //interfaces for communication
-	//interface for timer
-    //other interfaces, if needed
+	interface SplitControl;
+	interface Packet;
 	
-	//interface used to perform sensor reading (to get the value from a sensor)
+	interface AMSend;
+    interface Receive;
+    	
+    interface Timer<TMilli> as TimerMote1;
+	interface Timer<TMilli> as TimerMote2;
+	
 	interface Read<uint16_t>;
   }
 
@@ -31,6 +35,62 @@ module sendAckC {
 
   void sendReq();
   void sendResp();
+  
+   //***************** Boot interface ********************//
+  event void Boot.booted() {
+	dbg("boot","Application booted on node %u.\n",TOS_NODE_ID);
+	call SplitControl.start();
+  }
+  
+  
+  //***************** SplitControl interface ********************//
+  event void SplitControl.startDone(error_t err){
+    if(err == SUCCESS){
+    	dbg("radio","Radio on \n");
+    	 
+		if(TOS_NODE_ID==1){ //in RunSimulation settato 1-2 id node
+  		//temp
+  		call TimerMote1.startPeriodic(1000);
+  		}
+
+        if(TOS_NODE_ID==2){
+        call TimerMote2.startPeriodic(1000);
+        }  
+ 	}
+    else{
+	//TODO:dbg for error
+		dbgerror("radio_err","radio error restart radio \n");
+		call SplitControl.start();
+    }
+  }
+  
+  
+  event void SplitControl.stopDone(error_t err){
+    /* Fill it ... */
+	dbg("radio","Radio off \n");
+  }
+
+
+  
+    //***************** MilliTimer interface ********************//
+  event void TimerMote1.fired() {
+	/* This event is triggered every time the timer fires.
+	 * When the timer fires, we send a request
+	 * Fill this part...
+	 */
+	 
+   	dbg("timer","Mote1 Timer fired at %s.\n", sim_time_string());
+   	//call sendReq();
+   	
+  }
+
+  event void TimerMote2.fired() {
+	/* This event is triggered every time the timer fires.
+	 * When the timer fires, we send a request
+	 * Fill this part...
+	 */
+	dbg("timer","Mote2 Timer fired at %s.\n", sim_time_string());
+  }
   
   
   //***************** Send request function ********************//
@@ -56,29 +116,7 @@ module sendAckC {
 	call Read.read();
   }
 
-  //***************** Boot interface ********************//
-  event void Boot.booted() {
-	dbg("boot","Application booted.\n");
-	/* Fill it ... */
-  }
-
-  //***************** SplitControl interface ********************//
-  event void SplitControl.startDone(error_t err){
-    /* Fill it ... */
-  }
-  
-  event void SplitControl.stopDone(error_t err){
-    /* Fill it ... */
-  }
-
-  //***************** MilliTimer interface ********************//
-  event void MilliTimer.fired() {
-	/* This event is triggered every time the timer fires.
-	 * When the timer fires, we send a request
-	 * Fill this part...
-	 */
-  }
-  
+ 
 
   //********************* AMSend interface ****************//
   event void AMSend.sendDone(message_t* buf,error_t err) {
@@ -117,4 +155,4 @@ module sendAckC {
 	 */
 
 }
-
+}

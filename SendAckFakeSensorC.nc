@@ -1,9 +1,7 @@
-			/**
- *  Source file for implementation of module sendAckC in which
- *  the node 1 send a request to node 2 until it receives a response.
- *  The reply message contains a reading from the Fake Sensor.
+/**
+ *  
  *
- *  @author Luca Pietro Borsani
+ *  @author Di Giusto Federico 10693473
  */
 
 #include "SendAckFakeSensor.h"

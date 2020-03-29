@@ -25,12 +25,6 @@ print "    using noise file:",modelfile;
 print "Initializing simulator....";
 t.init();
 
-
-#simulation_outfile = "simulation.txt";
-#print "Saving sensors simulation output to:", simulation_outfile;
-#simulation_out = open(simulation_outfile, "w");
-
-#out = open(simulation_outfile, "w");
 out = sys.stdout;
 
 #Add debug channel
@@ -55,7 +49,7 @@ t.addChannel("radio_rec",out);
 print "Activate debug message on channel radio_pack"
 t.addChannel("radio_pack",out);
 
-print "Activate debug message on channel timer"
+print "Activate debug message on channel sensor"
 t.addChannel("sensor",out);
 
 

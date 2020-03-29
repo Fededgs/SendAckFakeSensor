@@ -149,7 +149,7 @@ module SendAckFakeSensorC {
 		dbg_clear("radio_pack","\t\t Payload Received\n" );
 		dbg_clear("radio_pack", "\t\t msg_type: %hhu \n ", msgg->msg_type);
 		dbg_clear("radio_pack", "\t\t counter: %hhu \n ", msgg->counter);
-		dbg_clear("radio_pack", "\t\t value: %hhu \n ", msgg->value);
+		dbg_clear("radio_pack", "\t\t value: %f \n ", msgg->value);
 		dbg_clear("radio_send", "\n ");
 		dbg_clear("radio_pack", "\n");
  

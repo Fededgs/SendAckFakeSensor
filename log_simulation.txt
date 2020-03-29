@@ -135,7 +135,7 @@ DEBUG (1): >>>Pack
 		 Payload Received
 		 msg_type: 2 
  		 counter: 5 
- 		 value: 76 
+ 		 value: 76.937500 
  
  
 DEBUG (1): RESP message arrived

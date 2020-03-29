@@ -44,8 +44,6 @@ t.addChannel("timer",out);
 
 print "Activate debug message on channel radio"
 t.addChannel("radio",out);
-print "Activate debug message on channel radio_err"
-t.addChannel("radio_err",out);
 
 print "Activate debug message on channel radio_send"
 t.addChannel("radio_send",out);
@@ -53,13 +51,12 @@ print "Activate debug message on channel radio_ack"
 t.addChannel("radio_ack",out);
 print "Activate debug message on channel radio_rec"
 t.addChannel("radio_rec",out);
+
 print "Activate debug message on channel radio_pack"
 t.addChannel("radio_pack",out);
-print "Activate debug message on channel role"
-t.addChannel("role",out);
 
 print "Activate debug message on channel timer"
-t.addChannel("fake_sensor",out);
+t.addChannel("sensor",out);
 
 
 #Create nodes

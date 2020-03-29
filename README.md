@@ -27,3 +27,19 @@ Link repository github: https://github.com/Fededgs/SendAckFakeSensor
 * Mote2 read the value of the ```FakeSensor```, it sends the response as message to Mote1 (type ```RESP```,counter as what it received, value of the sensor)
 
 ### Key points on simulation with TOSSIM:
+* Channels:
+  * ```init```
+  * ```boot```
+  * ```timer``` : when it starts/stops
+  * ```radio``` : when it's tunerd on/off or raise error.
+  * ```radio_send``` :  sending of packet
+  * ```radio_ack``` : received or not the ACK
+  * ```radio_rec``` : received packet
+  * ```radio_pack``` : info on packet
+  * ```sensor``` : whent it reads or raises error
+* Create two nodes with ```TOS_NODE_ID``` equal to ```1``` and ```2```
+* Booting time:
+  * at ```0```s node1 is booted
+  * at ```5```s node2 is booted
+* ```1200``` number of events
+ 

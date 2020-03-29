@@ -28,6 +28,7 @@ Link repository github: https://github.com/Fededgs/SendAckFakeSensor
 
 ### Key points on simulation with TOSSIM:
 * Debug Channels:
+  * ```sensor``` : whent it reads or raises error
   * ```init```
   * ```boot```
   * ```timer``` : when it starts/stops
@@ -36,7 +37,6 @@ Link repository github: https://github.com/Fededgs/SendAckFakeSensor
   * ```radio_ack``` : received or not the ACK
   * ```radio_rec``` : received packet
   * ```radio_pack``` : info on packet
-  * ```sensor``` : whent it reads or raises error
 * Create two nodes with ```TOS_NODE_ID``` equal to ```1``` and ```2```
 * Booting times:
   * at ```0```s node1 is booted
@@ -49,8 +49,8 @@ Link repository github: https://github.com/Fededgs/SendAckFakeSensor
   * if it's ```REQ``` arrived -> call ```sendResp``` function
   * if it's ```RESP``` arrived -> nothing
 * The closing of the simulation is done in this way:
-  * The ```Timer``` of Mote1 is stopped when it receives the ACK od its REQ.
-  * Mote2 sends its ```RESP``` and it receives the ACK (NB: I would like to implement multiple ```RESP``` sending until the ACK is not received by Mote2, but as it's not specified in the rules, I prefered to not complicate code)
+  * The ```Timer``` of Mote1 is stopped when it receives the ACK of its REQ.
+  * Mote2 sends its ```RESP``` and it receives the ACK (NB: I would like to implement multiple ```RESP``` sending until the ACK is not received by Mote2, but as it's not specified in the rules, I prefered to not complicate the code)
 * use of ```PacketAcknowledgements```:
   * ```call PacketAcknowledgements.requestAck( &packet );``` in every sent message (both Mote1 and Mote2)
   * ```call PacketAcknowledgements.wasAcked( buf ); ``` in ```sendDone``` event to check if the ACK is received.
